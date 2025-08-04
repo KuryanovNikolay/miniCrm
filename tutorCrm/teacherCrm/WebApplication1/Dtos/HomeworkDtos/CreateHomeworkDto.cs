@@ -1,11 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace tutorCrm.Models;
+namespace WebApplication1.Dtos.HomeworkDtos;
 
-public class Homework
+public class CreateHomeworkDto
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-
     [Required]
     public Guid LessonId { get; set; }
 
@@ -22,12 +20,4 @@ public class Homework
     public string Description { get; set; }
 
     public DateTime? Deadline { get; set; }
-
-    [Required]
-    [StringLength(20)]
-    public string Status { get; set; } = "Assigned";
-
-    public virtual Lesson Lesson { get; set; }
-    public virtual User Teacher { get; set; }
-    public virtual User Student { get; set; }
 }

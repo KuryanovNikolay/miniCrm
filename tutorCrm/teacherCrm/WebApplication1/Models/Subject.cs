@@ -13,7 +13,6 @@ public class Subject
     [StringLength(500)]
     public string Description { get; set; }
 
-    // Навигационное свойство для уроков
     public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
 }
 

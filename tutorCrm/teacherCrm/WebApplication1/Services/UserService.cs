@@ -90,7 +90,7 @@ public class UserService : IUserService
         return await IsUserInRoleAsync(userId, "Student");
     }
 
-    public async Task<bool> IsTeacherAsync(Guid userId)
+    public async Task<bool> IsTeacherAsync(Guid userId) 
     {
         return await IsUserInRoleAsync(userId, "Teacher");
     }
