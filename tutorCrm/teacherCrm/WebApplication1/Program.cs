@@ -4,12 +4,18 @@ using tutorCrm.Models;
 using WebApplication1.Profiles;
 using WebApplication1.Repositories;
 using WebApplication1.Repositories.HomeworkRepositories;
+using WebApplication1.Repositories.LessonRepositories;
+using WebApplication1.Repositories.PaymentRepositories;
 using WebApplication1.Repositories.RoleRepositories;
 using WebApplication1.Repositories.SubjectRepositories; // Добавляем using для репозиториев Subject
+using WebApplication1.Repositories.SubscriptionRepositories;
 using WebApplication1.Services;
 using WebApplication1.Services.HomeworkServices;
+using WebApplication1.Services.LessonServices;
+using WebApplication1.Services.PaymentServices;
 using WebApplication1.Services.RoleServices;
-using WebApplication1.Services.SubjectServices; // Добавляем using для сервисов Subject
+using WebApplication1.Services.SubjectServices;
+using WebApplication1.Services.SubscriptionServices; // Добавляем using для сервисов Subject
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +36,15 @@ builder.Services.AddScoped<ISubjectService, SubjectService>();
 // Регистрация репозиториев и сервисов
 builder.Services.AddScoped<IHomeworkRepository, HomeworkRepository>();
 builder.Services.AddScoped<IHomeworkService, HomeworkService>();
+
+builder.Services.AddScoped<ILessonRepository, LessonRepository>();
+builder.Services.AddScoped<ILessonService, LessonService>();
+
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
 // Регистрация AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile)); // Указываем конкретный профиль
