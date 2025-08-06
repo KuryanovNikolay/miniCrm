@@ -22,10 +22,7 @@ public class UserRepository : IUserRepository
 
     public async Task<List<User>> GetAllUsersAsync()
     {
-        return await _db.Users
-            .Include(u => u.UserRoles)
-            .ThenInclude(ur => ur.Role)
-            .ToListAsync();
+        return await _db.Users.ToListAsync();
     }
 
     public async Task<bool> UserExistsAsync(Guid id)

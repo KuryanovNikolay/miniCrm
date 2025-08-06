@@ -7,7 +7,7 @@ public class Homework
     public Guid Id { get; set; } = Guid.NewGuid();
 
     [Required]
-    public Guid LessonId { get; set; }
+    public Guid? LessonId { get; set; }
 
     [Required]
     public Guid TeacherId { get; set; }
