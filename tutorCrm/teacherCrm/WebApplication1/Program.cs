@@ -1,6 +1,9 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using tutorCrm.Data;
 using tutorCrm.Models;
 using WebApplication1.Profiles;
@@ -19,11 +22,12 @@ using WebApplication1.Services.SubscriptionServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Конфигурация базы данных
+#region Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+#endregion
 
-// Настройка Identity
+#region Identity
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
 {
     options.Password.RequireDigit = true;
@@ -38,7 +42,29 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Регистрация сервисов
+// Конфигурация cookie-аутентификации
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/account/login"; // путь к странице логина
+    options.AccessDeniedPath = "/account/access-denied"; // путь к странице отказа в доступе
+    options.ExpireTimeSpan = TimeSpan.FromHours(1);
+    options.SlidingExpiration = true;
+});
+#endregion
+
+// УБИРАЕМ весь блок JWT Authentication!
+// builder.Services.AddAuthentication... и .AddJwtBearer(...) — убрать полностью.
+
+#region Authorization
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("RequireTeacherRole", policy => policy.RequireRole("Teacher"));
+});
+#endregion
+
+#region Services
+// тут без изменений
 builder.Services.AddScoped<IHomeworkRepository, HomeworkRepository>();
 builder.Services.AddScoped<IHomeworkService, HomeworkService>();
 
@@ -53,34 +79,29 @@ builder.Services.AddScoped<ISubjectService, SubjectService>();
 
 builder.Services.AddScoped<ISubscriptionRepository, SubscriptionRepository>();
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
-// Регистрация сервисов
+
 builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IHomeworkService, HomeworkService>();
+#endregion
 
-// AutoMapper
+#region AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
+#endregion
 
-// Контроллеры и Swagger
+#region Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "Tutor CRM API", Version = "v1" });
-    c.AddSecurityDefinition("Bearer", new() { /* конфигурация JWT */ });
-    c.AddSecurityRequirement(new() { /* конфигурация безопасности */ });
-});
 
-// Аутентификация и авторизация
-builder.Services.AddAuthentication();
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
-    options.AddPolicy("RequireTeacherRole", policy => policy.RequireRole("Teacher"));
+    // Тут можно убрать секцию с JWT, т.к. больше не используем JWT
+    // Если хочешь, можешь оставить для тестирования
 });
+#endregion
 
 var app = builder.Build();
 
-// Конфигурация middleware
+#region Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -89,12 +110,14 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Порядок важен: сначала аутентификация, потом авторизация
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+#endregion
 
-// Инициализация базы данных
+#region Seed Data
 using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
@@ -105,9 +128,7 @@ using (var scope = app.Services.CreateScope())
         var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
         await context.Database.MigrateAsync();
-
-        // Инициализация начальных данных
-        await InitializeSeedData(context, userManager, roleManager);
+        await InitializeSeedData(userManager, roleManager);
     }
     catch (Exception ex)
     {
@@ -115,14 +136,13 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
+#endregion
 
 app.Run();
 
-async Task InitializeSeedData(ApplicationDbContext context,
-    UserManager<ApplicationUser> userManager,
-    RoleManager<IdentityRole<Guid>> roleManager)
+#region Seed Method
+async Task InitializeSeedData(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole<Guid>> roleManager)
 {
-    // Создание ролей
     string[] roleNames = { "Admin", "Teacher", "Student" };
     foreach (var roleName in roleNames)
     {
@@ -132,7 +152,6 @@ async Task InitializeSeedData(ApplicationDbContext context,
         }
     }
 
-    // Создание администратора
     var adminEmail = "admin@tutorcrm.com";
     if (await userManager.FindByEmailAsync(adminEmail) == null)
     {
@@ -152,3 +171,4 @@ async Task InitializeSeedData(ApplicationDbContext context,
         }
     }
 }
+#endregion

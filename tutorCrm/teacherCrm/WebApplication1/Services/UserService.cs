@@ -36,52 +36,29 @@ public class UserService : IUserService
         return await Task.Run(() => _userManager.Users.ToList());
     }
 
-    public async Task<UserResponseDto> CreateUserAsync(CreateUserDto createUserDto)
+    public async Task<UserResponseDto> CreateUserAsync(CreateUserDto dto)
     {
-        var roleName = string.IsNullOrWhiteSpace(createUserDto.Role) ? "User" : createUserDto.Role;
+        var roleName = string.IsNullOrWhiteSpace(dto.Role) ? "User" : dto.Role;
 
-        // Создаем пользователя без UserManager (чтобы потом вручную управлять ролями)
         var user = new ApplicationUser
         {
-            UserName = createUserDto.Username,
-            Email = createUserDto.Email,
-            FullName = createUserDto.FullName,
-            PhoneNumber = createUserDto.PhoneNumber,
-            ParentFullName = createUserDto.ParentFullName,
-            ParentContact = createUserDto.ParentContact,
-            RegistrationDate = DateTime.UtcNow,
-            SecurityStamp = Guid.NewGuid().ToString()
+            UserName = dto.Username,
+            Email = dto.Email,
+            FullName = dto.FullName,
+            PhoneNumber = dto.PhoneNumber,
+            ParentFullName = dto.ParentFullName,
+            ParentContact = dto.ParentContact,
+            RegistrationDate = DateTime.UtcNow
         };
 
-        // Хешируем пароль вручную (UserManager обычно это делает)
-        var passwordHasher = new PasswordHasher<ApplicationUser>();
-        user.PasswordHash = passwordHasher.HashPassword(user, createUserDto.Password);
+        var createResult = await _userManager.CreateAsync(user, dto.Password);
+        if (!createResult.Succeeded)
+            throw new Exception(string.Join(", ", createResult.Errors.Select(e => e.Description)));
 
-        // Сохраняем пользователя в БД напрямую
-        _dbContext.Users.Add(user);
-        await _dbContext.SaveChangesAsync(); // user.Id становится доступен
+        if (!await _roleManager.RoleExistsAsync(roleName))
+            await _roleManager.CreateAsync(new IdentityRole<Guid>(roleName));
 
-        // Ищем роль в БД
-        var role = _dbContext.Roles.FirstOrDefault(r => r.Name == roleName);
-        if (role == null)
-        {
-            // Создаем роль если нет
-            role = new IdentityRole<Guid> { Name = roleName, NormalizedName = roleName.ToUpper() };
-            _dbContext.Roles.Add(role);
-            await _dbContext.SaveChangesAsync();
-        }
-
-        var userForRole = _dbContext.Users.FirstOrDefault(u => u.UserName == createUserDto.Username);
-        
-
-        // Добавляем связь в AspNetUserRoles
-        var userRole = new IdentityUserRole<Guid>
-        {
-            UserId = userForRole.Id,
-            RoleId = role.Id
-        };
-        _dbContext.UserRoles.Add(userRole);
-        await _dbContext.SaveChangesAsync();
+        await _userManager.AddToRoleAsync(user, roleName);
 
         return new UserResponseDto
         {
@@ -96,6 +73,7 @@ public class UserService : IUserService
             Role = roleName
         };
     }
+
 
 
 
