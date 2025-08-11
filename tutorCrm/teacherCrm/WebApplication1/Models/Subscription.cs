@@ -33,8 +33,8 @@ public class Subscription
     public DateTime? EndDate { get; set; }
 
     // Навигационные свойства
-    public virtual User Teacher { get; set; }
-    public virtual User Student { get; set; }
+    public virtual ApplicationUser Teacher { get; set; }
+    public virtual ApplicationUser Student { get; set; }
     public virtual Subject Subject { get; set; }
 }
 

@@ -13,10 +13,6 @@ public class MappingProfile : Profile
 {
     public MappingProfile()
     {
-        CreateMap<Role, RoleDto>();
-        CreateMap<CreateRoleDto, Role>();
-        CreateMap<UpdateRoleDto, Role>();
-
         CreateMap<Subject, SubjectDto>();
         CreateMap<CreateSubjectDto, Subject>();
         CreateMap<UpdateSubjectDto, Subject>();

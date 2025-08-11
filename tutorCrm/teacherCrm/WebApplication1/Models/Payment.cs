@@ -25,8 +25,8 @@ public class Payment
 
     public Guid? LessonId { get; set; }
 
-    public virtual User Teacher { get; set; }
-    public virtual User Student { get; set; }
+    public virtual ApplicationUser Teacher { get; set; }
+    public virtual ApplicationUser Student { get; set; }
     public virtual Lesson Lesson { get; set; }
 }
 

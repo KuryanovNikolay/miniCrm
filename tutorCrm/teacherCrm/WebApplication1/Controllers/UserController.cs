@@ -17,7 +17,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<User>> GetUser(Guid id)
+    public async Task<ActionResult<ApplicationUser>> GetUser(Guid id)
     {
         try
         {
@@ -35,7 +35,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<User>>> GetAllUsers()
+    public async Task<ActionResult<List<ApplicationUser>>> GetAllUsers()
     {
         try
         {
@@ -64,7 +64,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] User user)
+    public async Task<IActionResult> UpdateUser(Guid id, [FromBody] ApplicationUser user)
     {
         try
         {
@@ -104,45 +104,4 @@ public class UserController : ControllerBase
         }
     }
 
-    [HttpGet("{userId}/roles/{roleName}")]
-    public async Task<ActionResult<bool>> CheckUserRole(Guid userId, string roleName)
-    {
-        try
-        {
-            var hasRole = await _userService.IsUserInRoleAsync(userId, roleName);
-            return Ok(hasRole);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Internal server error: {ex.Message}");
-        }
-    }
-
-    [HttpGet("{userId}/is-student")]
-    public async Task<ActionResult<bool>> IsStudent(Guid userId)
-    {
-        try
-        {
-            var isStudent = await _userService.IsStudentAsync(userId);
-            return Ok(isStudent);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Internal server error: {ex.Message}");
-        }
-    }
-
-    [HttpGet("{userId}/is-teacher")]
-    public async Task<ActionResult<bool>> IsTeacher(Guid userId)
-    {
-        try
-        {
-            var isTeacher = await _userService.IsTeacherAsync(userId);
-            return Ok(isTeacher);
-        }
-        catch (Exception ex)
-        {
-            return StatusCode(500, $"Internal server error: {ex.Message}");
-        }
-    }
 }

@@ -1,97 +1,143 @@
-﻿using tutorCrm.Models;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using System.Data.Entity;
+using tutorCrm.Data;
+using tutorCrm.Models;
 using WebApplication1.Dtos.UserDtos;
-using WebApplication1.Repositories;
 
 namespace WebApplication1.Services;
 
 public class UserService : IUserService
 {
-    private readonly IUserRepository _userRepository;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole<Guid>> _roleManager;
+    private readonly ILogger<UserService> _logger;
+    private readonly ApplicationDbContext _dbContext;
 
-    public UserService(IUserRepository userRepository)
+    public UserService(
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole<Guid>> roleManager,
+        ILogger<UserService> logger,
+        ApplicationDbContext dbContext)
     {
-        _userRepository = userRepository;
+        _userManager = userManager;
+        _roleManager = roleManager;
+        _logger = logger;
+        _dbContext = dbContext;
     }
 
-    public async Task<User?> GetUserByIdAsync(Guid id)
+    public async Task<ApplicationUser?> GetUserByIdAsync(Guid id)
     {
-        return await _userRepository.GetUserByIdAsync(id);
+        return await _userManager.FindByIdAsync(id.ToString());
     }
 
-    public async Task<List<User>> GetAllUsersAsync()
+    public async Task<List<ApplicationUser>> GetAllUsersAsync()
     {
-        return await _userRepository.GetAllUsersAsync();
+        return await Task.Run(() => _userManager.Users.ToList());
     }
 
-    public async Task<UserResponseDto> CreateUserAsync(CreateUserDto userDto)
+    public async Task<UserResponseDto> CreateUserAsync(CreateUserDto createUserDto)
     {
-        if (await _userRepository.UserExistsAsync(userDto.Username, userDto.Email))
+        var roleName = string.IsNullOrWhiteSpace(createUserDto.Role) ? "User" : createUserDto.Role;
+
+        // Создаем пользователя без UserManager (чтобы потом вручную управлять ролями)
+        var user = new ApplicationUser
         {
-            throw new InvalidOperationException("User already exists");
-        }
-
-        var user = new User
-        {
-            Username = userDto.Username,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
-            Email = userDto.Email,
-            FullName = userDto.FullName,
-            PhoneNumber = userDto.PhoneNumber,
-            ParentFullName = userDto.ParentFullName,
-            ParentContact = userDto.ParentContact,
-            RegistrationDate = DateTime.UtcNow
+            UserName = createUserDto.Username,
+            Email = createUserDto.Email,
+            FullName = createUserDto.FullName,
+            PhoneNumber = createUserDto.PhoneNumber,
+            ParentFullName = createUserDto.ParentFullName,
+            ParentContact = createUserDto.ParentContact,
+            RegistrationDate = DateTime.UtcNow,
+            SecurityStamp = Guid.NewGuid().ToString()
         };
 
-        await _userRepository.AddUserAsync(user);
+        // Хешируем пароль вручную (UserManager обычно это делает)
+        var passwordHasher = new PasswordHasher<ApplicationUser>();
+        user.PasswordHash = passwordHasher.HashPassword(user, createUserDto.Password);
+
+        // Сохраняем пользователя в БД напрямую
+        _dbContext.Users.Add(user);
+        await _dbContext.SaveChangesAsync(); // user.Id становится доступен
+
+        // Ищем роль в БД
+        var role = _dbContext.Roles.FirstOrDefault(r => r.Name == roleName);
+        if (role == null)
+        {
+            // Создаем роль если нет
+            role = new IdentityRole<Guid> { Name = roleName, NormalizedName = roleName.ToUpper() };
+            _dbContext.Roles.Add(role);
+            await _dbContext.SaveChangesAsync();
+        }
+
+        var userForRole = _dbContext.Users.FirstOrDefault(u => u.UserName == createUserDto.Username);
+        
+
+        // Добавляем связь в AspNetUserRoles
+        var userRole = new IdentityUserRole<Guid>
+        {
+            UserId = userForRole.Id,
+            RoleId = role.Id
+        };
+        _dbContext.UserRoles.Add(userRole);
+        await _dbContext.SaveChangesAsync();
+
         return new UserResponseDto
         {
             Id = user.Id,
-            Username = user.Username,
+            Username = user.UserName,
             Email = user.Email,
             FullName = user.FullName,
             PhoneNumber = user.PhoneNumber,
             RegistrationDate = user.RegistrationDate,
             ParentFullName = user.ParentFullName,
-            ParentContact = user.ParentContact
+            ParentContact = user.ParentContact,
+            Role = roleName
         };
     }
 
-    public async Task UpdateUserAsync(User user)
+
+
+
+    public async Task UpdateUserAsync(ApplicationUser user)
     {
-        User? existingUser = await _userRepository.GetUserByIdAsync(user.Id);
-
-        if (existingUser == null)
+        var result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded)
         {
-            throw new KeyNotFoundException("User not found");
+            throw new InvalidOperationException(
+                $"Ошибка обновления пользователя: {string.Join(", ", result.Errors.Select(e => e.Description))}");
         }
-
-        await _userRepository.UpdateUserAsync(user);
     }
 
     public async Task DeleteUserAsync(Guid id)
     {
-        User? user = await _userRepository.GetUserByIdAsync(id);
-
+        var user = await _userManager.FindByIdAsync(id.ToString());
         if (user == null)
         {
-            throw new KeyNotFoundException("User not found");
+            throw new KeyNotFoundException("Пользователь не найден");
         }
 
-        await _userRepository.DeleteUserAsync(id);
+        var result = await _userManager.DeleteAsync(user);
+        if (!result.Succeeded)
+        {
+            throw new InvalidOperationException(
+                $"Ошибка удаления пользователя: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+        }
     }
 
-    public async Task<bool> IsUserInRoleAsync(Guid userId, string roleName)
+    // Новый метод для проверки ролей
+    public async Task<bool> RoleExistsAsync(string roleName)
     {
-        return await _userRepository.IsUserInRoleAsync(userId, roleName);
+        return await _roleManager.RoleExistsAsync(roleName);
     }
 
-    public async Task<bool> IsStudentAsync(Guid userId)
+    // Новый метод для получения всех ролей пользователя
+    public async Task<IList<string>> GetUserRolesAsync(Guid userId)
     {
-        return await IsUserInRoleAsync(userId, "Student");
-    }
-
-    public async Task<bool> IsTeacherAsync(Guid userId) 
-    {
-        return await IsUserInRoleAsync(userId, "Teacher");
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        return user != null
+            ? await _userManager.GetRolesAsync(user)
+            : throw new KeyNotFoundException("Пользователь не найден");
     }
 }

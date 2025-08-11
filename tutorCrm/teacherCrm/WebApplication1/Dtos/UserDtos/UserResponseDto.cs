@@ -1,4 +1,5 @@
 ﻿namespace WebApplication1.Dtos.UserDtos;
+
 public class UserResponseDto
 {
     public Guid Id { get; set; }
@@ -9,5 +10,5 @@ public class UserResponseDto
     public DateTime RegistrationDate { get; set; }
     public string ParentFullName { get; set; }
     public string? ParentContact { get; set; }
+    public string Role { get; set; }
 }
-

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using tutorCrm.Data;
 using tutorCrm.Models;
 using WebApplication1.Repositories.HomeworkRepositories;
 

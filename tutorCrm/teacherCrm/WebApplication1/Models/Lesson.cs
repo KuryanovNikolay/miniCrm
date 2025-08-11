@@ -34,8 +34,8 @@ public class Lesson
 
     public string Notes { get; set; }
 
-    public virtual User Teacher { get; set; }
-    public virtual User Student { get; set; }
+    public virtual ApplicationUser Teacher { get; set; }
+    public virtual ApplicationUser Student { get; set; }
     public virtual Subject Subject { get; set; }
     public virtual ICollection<Homework> Homeworks { get; set; } = new List<Homework>();
 }

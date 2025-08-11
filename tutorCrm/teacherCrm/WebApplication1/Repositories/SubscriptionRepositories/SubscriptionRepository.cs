@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using tutorCrm.Data;
 using tutorCrm.Models;
 
 namespace WebApplication1.Repositories.SubscriptionRepositories;
