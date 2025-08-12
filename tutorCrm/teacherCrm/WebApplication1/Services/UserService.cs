@@ -104,13 +104,11 @@ public class UserService : IUserService
         }
     }
 
-    // Новый метод для проверки ролей
     public async Task<bool> RoleExistsAsync(string roleName)
     {
         return await _roleManager.RoleExistsAsync(roleName);
     }
 
-    // Новый метод для получения всех ролей пользователя
     public async Task<IList<string>> GetUserRolesAsync(Guid userId)
     {
         var user = await _userManager.FindByIdAsync(userId.ToString());

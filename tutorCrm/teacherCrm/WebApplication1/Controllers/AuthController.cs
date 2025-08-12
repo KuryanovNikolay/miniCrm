@@ -15,7 +15,6 @@ public class AccountController : ControllerBase
         _userManager = userManager;
     }
 
-    // GET account/login — просто возвращаем 200 OK с подсказкой (можно убрать)
     [HttpGet("login")]
     public IActionResult Login()
     {
@@ -45,6 +44,6 @@ public class AccountController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
-        return NoContent(); // 204 No Content — успешно, но тело пустое
+        return NoContent();
     }
 }

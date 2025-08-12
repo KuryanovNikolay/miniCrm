@@ -1,9 +1,13 @@
-﻿namespace WebApplication1.Dtos.SubjectDtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace WebApplication1.Dtos.SubjectDtos;
+
+public class SubjectDto
 {
-    public class SubjectDto
-    {
-        public Guid Id { get; set; }
-        public string Name { get; set; }
-        public string? Description { get; set; }
-    }
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public string? Description { get; set; }
+
+    [Required]
+    public Guid TeacherId { get; set; }
 }

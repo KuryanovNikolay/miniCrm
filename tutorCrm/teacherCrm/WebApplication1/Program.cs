@@ -42,18 +42,14 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(options =>
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
 
-// Конфигурация cookie-аутентификации
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/account/login"; // путь к странице логина
-    options.AccessDeniedPath = "/account/access-denied"; // путь к странице отказа в доступе
+    options.LoginPath = "/account/login";
+    options.AccessDeniedPath = "/account/access-denied";
     options.ExpireTimeSpan = TimeSpan.FromHours(1);
     options.SlidingExpiration = true;
 });
 #endregion
-
-// УБИРАЕМ весь блок JWT Authentication!
-// builder.Services.AddAuthentication... и .AddJwtBearer(...) — убрать полностью.
 
 #region Authorization
 builder.Services.AddAuthorization(options =>
@@ -64,7 +60,6 @@ builder.Services.AddAuthorization(options =>
 #endregion
 
 #region Services
-// тут без изменений
 builder.Services.AddScoped<IHomeworkRepository, HomeworkRepository>();
 builder.Services.AddScoped<IHomeworkService, HomeworkService>();
 
@@ -93,9 +88,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "Tutor CRM API", Version = "v1" });
-
-    // Тут можно убрать секцию с JWT, т.к. больше не используем JWT
-    // Если хочешь, можешь оставить для тестирования
 });
 #endregion
 
@@ -110,7 +102,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Порядок важен: сначала аутентификация, потом авторизация
 app.UseAuthentication();
 app.UseAuthorization();
 

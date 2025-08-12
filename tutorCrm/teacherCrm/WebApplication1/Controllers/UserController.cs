@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using tutorCrm.Models;
 using WebApplication1.Dtos.UserDtos;
 using WebApplication1.Services;
@@ -7,6 +9,7 @@ namespace WebApplication1.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class UserController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -19,13 +22,18 @@ public class UserController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<ApplicationUser>> GetUser(Guid id)
     {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var isAdmin = User.IsInRole("Admin");
+
+        if (!isAdmin && userId != id)
+            return Forbid();
+
         try
         {
             var user = await _userService.GetUserByIdAsync(id);
             if (user == null)
-            {
                 return NotFound();
-            }
+
             return Ok(user);
         }
         catch (Exception ex)
@@ -37,6 +45,9 @@ public class UserController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<List<ApplicationUser>>> GetAllUsers()
     {
+        if (!User.IsInRole("Admin"))
+            return Forbid();
+
         try
         {
             var users = await _userService.GetAllUsersAsync();
@@ -49,7 +60,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserDto userDto)
     {
         try
@@ -66,13 +77,17 @@ public class UserController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateUser(Guid id, [FromBody] ApplicationUser user)
     {
+        var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+        var isAdmin = User.IsInRole("Admin");
+
+        if (!isAdmin && userId != id)
+            return Forbid();
+
+        if (id != user.Id)
+            return BadRequest("ID mismatch");
+
         try
         {
-            if (id != user.Id)
-            {
-                return BadRequest("ID mismatch");
-            }
-
             await _userService.UpdateUserAsync(user);
             return NoContent();
         }
@@ -87,6 +102,7 @@ public class UserController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteUser(Guid id)
     {
         try
@@ -103,5 +119,4 @@ public class UserController : ControllerBase
             return StatusCode(500, $"Internal server error: {ex.Message}");
         }
     }
-
 }

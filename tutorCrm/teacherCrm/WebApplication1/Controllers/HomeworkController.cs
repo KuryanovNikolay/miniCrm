@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using WebApplication1.Dtos.HomeworkDtos;
 using WebApplication1.Services.HomeworkServices;
 
@@ -15,6 +16,7 @@ public class HomeworkController : ControllerBase
         _homeworkService = homeworkService;
     }
 
+    [Authorize(Roles = "Admin,Student,Parent,User,Teacher")]
     [HttpGet("{id}")]
     public async Task<IActionResult> GetHomeworkById(Guid id)
     {
@@ -22,6 +24,7 @@ public class HomeworkController : ControllerBase
         return Ok(homework);
     }
 
+    [Authorize(Roles = "Admin,User,Teacher")]
     [HttpGet]
     public async Task<IActionResult> GetAllHomeworks()
     {
@@ -29,6 +32,7 @@ public class HomeworkController : ControllerBase
         return Ok(homeworks);
     }
 
+    [Authorize(Roles = "Admin,Teacher")]
     [HttpPost]
     public async Task<IActionResult> CreateHomework([FromBody] CreateHomeworkDto dto)
     {
@@ -36,6 +40,7 @@ public class HomeworkController : ControllerBase
         return CreatedAtAction(nameof(GetHomeworkById), new { id = createdHomework.Id }, createdHomework);
     }
 
+    [Authorize(Roles = "Admin,Teacher")]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateHomework(Guid id, [FromBody] UpdateHomeworkDto dto)
     {
@@ -43,6 +48,7 @@ public class HomeworkController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin,Teacher")]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteHomework(Guid id)
     {
@@ -50,6 +56,7 @@ public class HomeworkController : ControllerBase
         return NoContent();
     }
 
+    [Authorize(Roles = "Admin,Student,Teacher")]
     [HttpGet("student/{studentId}")]
     public async Task<IActionResult> GetHomeworksByStudentId(Guid studentId)
     {
@@ -57,6 +64,7 @@ public class HomeworkController : ControllerBase
         return Ok(homeworks);
     }
 
+    [Authorize(Roles = "Admin,Parent,Teacher")]
     [HttpGet("teacher/{teacherId}")]
     public async Task<IActionResult> GetHomeworksByTeacherId(Guid teacherId)
     {
