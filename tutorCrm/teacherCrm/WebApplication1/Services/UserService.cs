@@ -116,4 +116,22 @@ public class UserService : IUserService
             ? await _userManager.GetRolesAsync(user)
             : throw new KeyNotFoundException("Пользователь не найден");
     }
+
+    public async Task<UserResponseDto> RegisterAsync(RegisterUserDto dto)
+    {
+        var createDto = new CreateUserDto
+        {
+            Username = dto.Username,
+            Email = dto.Email,
+            FullName = dto.FullName,
+            PhoneNumber = dto.PhoneNumber,
+            ParentFullName = dto.ParentFullName,
+            ParentContact = dto.ParentContact,
+            Password = dto.Password,
+            Role = "User" 
+        };
+
+        return await CreateUserAsync(createDto);
+    }
+
 }

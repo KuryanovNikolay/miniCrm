@@ -8,17 +8,40 @@ public class AccountController : ControllerBase
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly RoleManager<IdentityRole<Guid>> _roleManager;
 
-    public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    public AccountController(
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager,
+        RoleManager<IdentityRole<Guid>> roleManager)
     {
         _signInManager = signInManager;
         _userManager = userManager;
+        _roleManager = roleManager;
     }
 
-    [HttpGet("login")]
-    public IActionResult Login()
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterUserDto model)
     {
-        return Ok(new { message = "Use POST to login with email and password." });
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var user = new ApplicationUser
+        {
+            UserName = model.Username,
+            Email = model.Email
+        };
+
+        var result = await _userManager.CreateAsync(user, model.Password);
+
+        if (!result.Succeeded) 
+        {
+            return BadRequest(result.Errors);
+        }
+
+        await _userManager.AddToRoleAsync(user, "User");
+
+        return Ok(new { message = "Регистрация успешна" });
     }
 
     [HttpPost("login")]

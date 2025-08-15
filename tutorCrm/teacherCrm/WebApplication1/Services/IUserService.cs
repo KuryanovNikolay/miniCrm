@@ -1,14 +1,14 @@
-﻿using tutorCrm.Models;
-using WebApplication1.Dtos.UserDtos;
+﻿using WebApplication1.Dtos.UserDtos;
 
 namespace WebApplication1.Services;
 
 public interface IUserService
-    {
-        Task<ApplicationUser?> GetUserByIdAsync(Guid id);
-        Task<List<ApplicationUser>> GetAllUsersAsync();
-        Task<UserResponseDto> CreateUserAsync(CreateUserDto userDto);
-        Task UpdateUserAsync(ApplicationUser user);
-        Task DeleteUserAsync(Guid id);
+{
+    Task<ApplicationUser?> GetUserByIdAsync(Guid id);
+    Task<List<ApplicationUser>> GetAllUsersAsync();
+    Task<UserResponseDto> RegisterAsync(RegisterUserDto dto);
+    Task<UserResponseDto> CreateUserAsync(CreateUserDto userDto);
+    Task UpdateUserAsync(ApplicationUser user);
+    Task DeleteUserAsync(Guid id);
 }
 

@@ -29,6 +29,7 @@ public class SubjectsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAllSubjects()
     {
         var subjects = await _subjectService.GetAllSubjectsAsync();

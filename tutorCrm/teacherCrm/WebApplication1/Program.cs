@@ -21,6 +21,8 @@ using WebApplication1.Services.SubjectServices;
 using WebApplication1.Services.SubscriptionServices;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddRazorPages();
+
 
 #region Database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -60,6 +62,8 @@ builder.Services.AddAuthorization(options =>
 #endregion
 
 #region Services
+builder.Services.AddHttpClient();
+
 builder.Services.AddScoped<IHomeworkRepository, HomeworkRepository>();
 builder.Services.AddScoped<IHomeworkService, HomeworkService>();
 
@@ -89,11 +93,12 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "Tutor CRM API", Version = "v1" });
 });
+builder.Services.AddHttpClient();
+
 #endregion
 
 var app = builder.Build();
 
-#region Middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -101,14 +106,16 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-#endregion
+app.MapRazorPages();
 
-#region Seed Data
 using (var scope = app.Services.CreateScope())
 {
     var serviceProvider = scope.ServiceProvider;
@@ -127,7 +134,6 @@ using (var scope = app.Services.CreateScope())
         logger.LogError(ex, "An error occurred while seeding the database.");
     }
 }
-#endregion
 
 app.Run();
 

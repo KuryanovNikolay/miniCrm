@@ -19,6 +19,7 @@ public class SubscriptionsController : ControllerBase
     }
 
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<SubscriptionDto>>> GetAll()
     {
         if (!User.IsInRole("Admin"))

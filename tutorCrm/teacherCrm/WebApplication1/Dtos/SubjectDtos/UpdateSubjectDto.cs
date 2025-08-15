@@ -1,17 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebApplication1.Dtos.SubjectDtos
+namespace WebApplication1.Dtos.SubjectDtos;
+
+public class UpdateSubjectDto
 {
-    public class UpdateSubjectDto
-    {
-        [Required]
-        public Guid TeacherId { get; set; }
+    [Required]
+    public Guid TeacherId { get; set; }
 
-        [Required]
-        [StringLength(100)]
-        public string Name { get; set; }
+    [Required]
+    [StringLength(100)]
+    public string Name { get; set; }
 
-        [StringLength(500)]
-        public string? Description { get; set; }
-    }
+    [StringLength(500)]
+    public string? Description { get; set; }
 }

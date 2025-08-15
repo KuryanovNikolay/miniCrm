@@ -10,12 +10,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
 
-    // Учебные сущности
     public DbSet<Subject> Subjects { get; set; }
     public DbSet<Lesson> Lessons { get; set; }
     public DbSet<Homework> Homeworks { get; set; }
 
-    // Финансовые сущности
     public DbSet<Payment> Payments { get; set; }
     public DbSet<Subscription> Subscriptions { get; set; }
 
@@ -23,10 +21,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
     {
         base.OnModelCreating(modelBuilder);
 
-        // Конфигурация User с полным набором полей Identity
         modelBuilder.Entity<ApplicationUser>(b =>
         {
-            // Базовые поля Identity
             b.Property(u => u.UserName).HasMaxLength(256);
             b.Property(u => u.NormalizedUserName).HasMaxLength(256);
             b.Property(u => u.Email).HasMaxLength(256);
@@ -42,7 +38,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             b.Property(u => u.LockoutEnabled).HasDefaultValue(false);
             b.Property(u => u.AccessFailedCount).HasDefaultValue(0);
 
-            // Кастомные поля
             b.Property(u => u.FullName)
                 .IsRequired()
                 .HasMaxLength(100);
@@ -58,24 +53,20 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
                 .HasMaxLength(100);
         });
 
-        // Настройка Role
         modelBuilder.Entity<IdentityRole<Guid>>(b =>
         {
             b.Property(r => r.Name).HasMaxLength(256);
             b.Property(r => r.NormalizedName).HasMaxLength(256);
         });
 
-        // Конфигурация бизнес-сущностей (оставляем без изменений)
         ConfigureEducationalEntities(modelBuilder);
         ConfigureFinancialEntities(modelBuilder);
 
-        // Начальные данные
         SeedInitialData(modelBuilder);
     }
 
     private void ConfigureEducationalEntities(ModelBuilder modelBuilder)
     {
-        // Конфигурация Lesson (без изменений)
         modelBuilder.Entity<Lesson>()
             .HasOne(l => l.Teacher)
             .WithMany()
@@ -98,7 +89,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             .HasDefaultValue("Scheduled")
             .HasConversion<string>();
 
-        // Конфигурация Homework (без изменений)
         modelBuilder.Entity<Homework>()
             .HasOne(h => h.Lesson)
             .WithMany(l => l.Homeworks)
@@ -112,7 +102,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void ConfigureFinancialEntities(ModelBuilder modelBuilder)
     {
-        // Конфигурация Payment (без изменений)
         modelBuilder.Entity<Payment>()
             .HasOne(p => p.Teacher)
             .WithMany()
@@ -136,7 +125,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             .HasDefaultValue("Pending")
             .HasConversion<string>();
 
-        // Конфигурация Subscription (без изменений)
         modelBuilder.Entity<Subscription>()
             .HasOne(s => s.Teacher)
             .WithMany()
@@ -157,7 +145,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
 
     private void SeedInitialData(ModelBuilder modelBuilder)
     {
-        // Начальные роли
         var adminRoleId = Guid.NewGuid();
         var teacherRoleId = Guid.NewGuid();
         var studentRoleId = Guid.NewGuid();
@@ -183,7 +170,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             }
         );
 
-        // Начальный администратор (адаптирован под полную схему)
         var adminUserId = Guid.NewGuid();
         var hasher = new PasswordHasher<ApplicationUser>();
 
