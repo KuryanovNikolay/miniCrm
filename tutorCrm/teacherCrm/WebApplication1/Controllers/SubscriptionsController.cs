@@ -6,18 +6,32 @@ using WebApplication1.Services.SubscriptionServices;
 
 namespace tutorCrm.Controllers;
 
+/// <summary>
+/// Контроллер для управления подписками.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class SubscriptionsController : ControllerBase
 {
+    /// <summary>
+    /// Сервис для работы с подписками.
+    /// </summary>
     private readonly ISubscriptionService _subscriptionService;
 
+    /// <summary>
+    /// Конструктор контроллера подписок.
+    /// </summary>
+    /// <param name="subscriptionService">Сервис подписок.</param>
     public SubscriptionsController(ISubscriptionService subscriptionService)
     {
         _subscriptionService = subscriptionService;
     }
 
+    /// <summary>
+    /// Получить список всех подписок (доступно только Администратору).
+    /// </summary>
+    /// <returns>Список подписок.</returns>
     [HttpGet]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<SubscriptionDto>>> GetAll()
@@ -29,6 +43,11 @@ public class SubscriptionsController : ControllerBase
         return Ok(subscriptions);
     }
 
+    /// <summary>
+    /// Получить подписку по идентификатору.
+    /// </summary>
+    /// <param name="id">Идентификатор подписки.</param>
+    /// <returns>Объект подписки.</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<SubscriptionDto>> GetById(Guid id)
     {
@@ -48,6 +67,11 @@ public class SubscriptionsController : ControllerBase
         return Ok(subscription);
     }
 
+    /// <summary>
+    /// Получить список подписок по идентификатору студента.
+    /// </summary>
+    /// <param name="studentId">Идентификатор студента.</param>
+    /// <returns>Список подписок.</returns>
     [HttpGet("student/{studentId}")]
     public async Task<ActionResult<IEnumerable<SubscriptionDto>>> GetByStudentId(Guid studentId)
     {
@@ -63,6 +87,11 @@ public class SubscriptionsController : ControllerBase
         return Ok(subscriptions);
     }
 
+    /// <summary>
+    /// Получить список подписок по идентификатору преподавателя.
+    /// </summary>
+    /// <param name="teacherId">Идентификатор преподавателя.</param>
+    /// <returns>Список подписок.</returns>
     [HttpGet("teacher/{teacherId}")]
     public async Task<ActionResult<IEnumerable<SubscriptionDto>>> GetByTeacherId(Guid teacherId)
     {
@@ -78,6 +107,11 @@ public class SubscriptionsController : ControllerBase
         return Ok(subscriptions);
     }
 
+    /// <summary>
+    /// Создать новую подписку (доступно Администратору и Преподавателю).
+    /// </summary>
+    /// <param name="createDto">Данные для создания подписки.</param>
+    /// <returns>Созданная подписка.</returns>
     [HttpPost]
     [Authorize(Roles = "Admin,Teacher")]
     public async Task<ActionResult<SubscriptionDto>> Create(CreateSubscriptionDto createDto)
@@ -91,6 +125,12 @@ public class SubscriptionsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = subscription.Id }, subscription);
     }
 
+    /// <summary>
+    /// Обновить данные подписки (доступно Администратору и Преподавателю).
+    /// </summary>
+    /// <param name="id">Идентификатор подписки.</param>
+    /// <param name="updateDto">Данные для обновления.</param>
+    /// <returns>Результат выполнения операции.</returns>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Teacher")]
     public async Task<IActionResult> Update(Guid id, UpdateSubscriptionDto updateDto)
@@ -108,6 +148,11 @@ public class SubscriptionsController : ControllerBase
         return Ok(updatedSubscription);
     }
 
+    /// <summary>
+    /// Удалить подписку (доступно Администратору и Преподавателю).
+    /// </summary>
+    /// <param name="id">Идентификатор подписки.</param>
+    /// <returns>Результат выполнения операции.</returns>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin,Teacher")]
     public async Task<IActionResult> Delete(Guid id)

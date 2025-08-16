@@ -4,21 +4,36 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using WebApplication1.Dtos.SubjectDtos;
 
+/// <summary>
+/// Модель страницы для отображения и управления предметами.
+/// </summary>
 public class SubjectsIndexModel : PageModel
 {
     private readonly IHttpClientFactory _httpClientFactory;
 
+    /// <summary>
+    /// Инициализирует новый экземпляр класса <see cref="SubjectsIndexModel"/>.
+    /// </summary>
+    /// <param name="httpClientFactory">Фабрика для создания HTTP-клиентов.</param>
     public SubjectsIndexModel(IHttpClientFactory httpClientFactory)
     {
         _httpClientFactory = httpClientFactory;
     }
 
+    /// <summary>
+    /// Список предметов для отображения на странице.
+    /// </summary>
     public List<SubjectDto> Subjects { get; set; } = new();
 
+    /// <summary>
+    /// Временное сообщение для отображения пользователю.
+    /// </summary>
     [TempData]
     public string? Message { get; set; }
 
-    // Получение всех предметов
+    /// <summary>
+    /// Обрабатывает GET-запрос для получения списка предметов.
+    /// </summary>
     public async Task OnGetAsync()
     {
         var client = _httpClientFactory.CreateClient();
@@ -43,8 +58,11 @@ public class SubjectsIndexModel : PageModel
         }
     }
 
-
-    // Подписка на предмет
+    /// <summary>
+    /// Обрабатывает POST-запрос для подписки на предмет.
+    /// </summary>
+    /// <param name="id">Идентификатор предмета для подписки.</param>
+    /// <returns>Перенаправление на текущую страницу.</returns>
     public async Task<IActionResult> OnPostSubscribeAsync(Guid id)
     {
         var client = _httpClientFactory.CreateClient();

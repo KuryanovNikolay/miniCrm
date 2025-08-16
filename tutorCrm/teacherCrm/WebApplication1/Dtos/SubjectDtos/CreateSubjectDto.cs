@@ -1,14 +1,29 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 
+namespace WebApplication1.Dtos.SubjectDtos;
+
+/// <summary>
+/// DTO для создания нового предмета.
+/// </summary>
 public class CreateSubjectDto
 {
+    /// <summary>
+    /// Название предмета.
+    /// </summary>
     [Required]
-    [StringLength(100)]
+    [StringLength(100, ErrorMessage = "Название предмета не должно превышать 100 символов")]
     public string Name { get; set; }
 
-    [StringLength(500)]
+    /// <summary>
+    /// Описание предмета (необязательное поле).
+    /// </summary>
+    [StringLength(500, ErrorMessage = "Описание предмета не должно превышать 500 символов")]
     public string? Description { get; set; }
 
+    /// <summary>
+    /// Идентификатор преподавателя.
+    /// </summary>
     [Required]
     public Guid TeacherId { get; set; }
 }

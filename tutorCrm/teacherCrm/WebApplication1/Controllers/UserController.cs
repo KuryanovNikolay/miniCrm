@@ -7,18 +7,35 @@ using WebApplication1.Services;
 
 namespace WebApplication1.Controllers;
 
+/// <summary>
+/// Контроллер для управления пользователями системы.
+/// Доступ к действиям ограничен ролями и авторизацией.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class UserController : ControllerBase
 {
+    /// <summary>
+    /// Сервис для работы с пользователями.
+    /// </summary>
     private readonly IUserService _userService;
 
+    /// <summary>
+    /// Конструктор контроллера пользователей.
+    /// </summary>
+    /// <param name="userService">Сервис для работы с пользователями.</param>
     public UserController(IUserService userService)
     {
         _userService = userService;
     }
 
+    /// <summary>
+    /// Получить пользователя по его <paramref name="id"/>.
+    /// Доступно самому пользователю или администратору.
+    /// </summary>
+    /// <param name="id">Идентификатор пользователя.</param>
+    /// <returns>Пользователь или ошибка доступа.</returns>
     [HttpGet("{id}")]
     public async Task<ActionResult<ApplicationUser>> GetUser(Guid id)
     {
@@ -42,6 +59,11 @@ public class UserController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Получить список всех пользователей.
+    /// Доступно только администраторам.
+    /// </summary>
+    /// <returns>Список пользователей.</returns>
     [HttpGet]
     public async Task<ActionResult<List<ApplicationUser>>> GetAllUsers()
     {
@@ -59,6 +81,12 @@ public class UserController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Создать нового пользователя.
+    /// Доступно только администраторам.
+    /// </summary>
+    /// <param name="userDto">Данные нового пользователя.</param>
+    /// <returns>Созданный пользователь.</returns>
     [HttpPost]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserDto userDto)
@@ -74,6 +102,13 @@ public class UserController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Обновить данные пользователя.
+    /// Доступно самому пользователю или администратору.
+    /// </summary>
+    /// <param name="id">Идентификатор пользователя.</param>
+    /// <param name="user">Обновлённые данные пользователя.</param>
+    /// <returns>Результат операции.</returns>
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateUser(Guid id, [FromBody] ApplicationUser user)
     {
@@ -101,6 +136,12 @@ public class UserController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Удалить пользователя.
+    /// Доступно только администраторам.
+    /// </summary>
+    /// <param name="id">Идентификатор пользователя.</param>
+    /// <returns>Результат операции.</returns>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteUser(Guid id)

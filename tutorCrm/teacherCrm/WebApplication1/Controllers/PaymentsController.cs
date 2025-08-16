@@ -6,18 +6,34 @@ using WebApplication1.Services.PaymentServices;
 
 namespace WebApplication1.Controllers;
 
+/// <summary>
+/// Контроллер для управления платежами.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
 public class PaymentsController : ControllerBase
 {
+    /// <summary>
+    /// Сервис для работы с платежами.
+    /// </summary>
     private readonly IPaymentService _paymentService;
 
+    /// <summary>
+    /// Конструктор контроллера платежей.
+    /// </summary>
+    /// <param name="paymentService">Сервис для управления платежами.</param>
     public PaymentsController(IPaymentService paymentService)
     {
         _paymentService = paymentService;
     }
 
+    /// <summary>
+    /// Получает платеж по идентификатору.
+    /// Доступ имеют администратор, преподаватель (участвующий в платеже) или студент (участвующий в платеже).
+    /// </summary>
+    /// <param name="id">Идентификатор платежа.</param>
+    /// <returns>Объект платежа или код ошибки.</returns>
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPaymentById(Guid id)
     {
@@ -37,6 +53,14 @@ public class PaymentsController : ControllerBase
         return Ok(payment);
     }
 
+    /// <summary>
+    /// Получает список всех платежей.
+    /// Доступ зависит от роли:
+    /// - Администратор видит все платежи,
+    /// - Преподаватель видит только свои платежи,
+    /// - Студент видит только свои платежи.
+    /// </summary>
+    /// <returns>Список платежей.</returns>
     [HttpGet]
     public async Task<IActionResult> GetAllPayments()
     {
@@ -58,6 +82,13 @@ public class PaymentsController : ControllerBase
         return Forbid();
     }
 
+    /// <summary>
+    /// Создает новый платеж.
+    /// Доступно для администратора и преподавателя.
+    /// Преподаватель может создавать только свои платежи.
+    /// </summary>
+    /// <param name="dto">Данные для создания платежа.</param>
+    /// <returns>Созданный платеж.</returns>
     [HttpPost]
     [Authorize(Roles = "Admin,Teacher")]
     public async Task<IActionResult> CreatePayment([FromBody] CreatePaymentDto dto)
@@ -73,6 +104,14 @@ public class PaymentsController : ControllerBase
         return CreatedAtAction(nameof(GetPaymentById), new { id = createdPayment.Id }, createdPayment);
     }
 
+    /// <summary>
+    /// Обновляет существующий платеж.
+    /// Доступно для администратора и преподавателя.
+    /// Преподаватель может изменять только свои платежи.
+    /// </summary>
+    /// <param name="id">Идентификатор платежа.</param>
+    /// <param name="dto">Обновленные данные платежа.</param>
+    /// <returns>Код 204 (No Content) при успешном обновлении.</returns>
     [HttpPut("{id}")]
     [Authorize(Roles = "Admin,Teacher")]
     public async Task<IActionResult> UpdatePayment(Guid id, [FromBody] UpdatePaymentDto dto)
@@ -92,6 +131,13 @@ public class PaymentsController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Удаляет платеж.
+    /// Доступно для администратора и преподавателя.
+    /// Преподаватель может удалять только свои платежи.
+    /// </summary>
+    /// <param name="id">Идентификатор платежа.</param>
+    /// <returns>Код 204 (No Content) при успешном удалении.</returns>
     [HttpDelete("{id}")]
     [Authorize(Roles = "Admin,Teacher")]
     public async Task<IActionResult> DeletePayment(Guid id)

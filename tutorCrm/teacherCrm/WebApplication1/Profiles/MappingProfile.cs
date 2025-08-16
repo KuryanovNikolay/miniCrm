@@ -9,8 +9,14 @@ using WebApplication1.Dtos.SubscriptionsDtos;
 
 namespace WebApplication1.Profiles;
 
+/// <summary>
+/// Профиль AutoMapper для сопоставления моделей и DTO.
+/// </summary>
 public class MappingProfile : Profile
 {
+    /// <summary>
+    /// Конструктор, в котором задаются все правила маппинга.
+    /// </summary>
     public MappingProfile()
     {
         CreateMap<Subject, SubjectDto>();

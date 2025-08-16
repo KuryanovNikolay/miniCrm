@@ -2,17 +2,40 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Net.Http.Json;
 using WebApplication1.Dtos.LoginDtos;
+using WebApplication1.Dtos.UserDtos;
 
+/// <summary>
+/// Модель страницы регистрации пользователя.
+/// </summary>
 public class RegisterModel : PageModel
 {
+    /// <summary>
+    /// Модель данных для регистрации пользователя.
+    /// </summary>
     [BindProperty]
     public RegisterUserDto Input { get; set; } = new();
 
+    /// <summary>
+    /// Сообщение об успешной регистрации.
+    /// </summary>
     public string? SuccessMessage { get; set; }
+
+    /// <summary>
+    /// Сообщение об ошибке при регистрации.
+    /// </summary>
     public string? ErrorMessage { get; set; }
 
+    /// <summary>
+    /// Обрабатывает GET-запрос к странице регистрации.
+    /// </summary>
     public void OnGet() { }
 
+    /// <summary>
+    /// Обрабатывает POST-запрос при отправке формы регистрации.
+    /// </summary>
+    /// <returns>
+    /// Страницу регистрации с результатом операции.
+    /// </returns>
     public async Task<IActionResult> OnPostAsync()
     {
         if (!ModelState.IsValid)

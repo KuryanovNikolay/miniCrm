@@ -5,22 +5,63 @@ using tutorCrm.Models;
 
 namespace tutorCrm.Data;
 
+/// <summary>
+/// Контекст базы данных приложения Tutor CRM.
+/// </summary>
 public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
+    /// <summary>
+    /// Инициализирует новый экземпляр контекста базы данных.
+    /// </summary>
+    /// <param name="options">Параметры конфигурации контекста.</param>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options) { }
 
+    /// <summary>
+    /// Набор данных предметов.
+    /// </summary>
     public DbSet<Subject> Subjects { get; set; }
+
+    /// <summary>
+    /// Набор данных уроков.
+    /// </summary>
     public DbSet<Lesson> Lessons { get; set; }
+
+    /// <summary>
+    /// Набор данных домашних заданий.
+    /// </summary>
     public DbSet<Homework> Homeworks { get; set; }
 
+    /// <summary>
+    /// Набор данных платежей.
+    /// </summary>
     public DbSet<Payment> Payments { get; set; }
+
+    /// <summary>
+    /// Набор данных подписок.
+    /// </summary>
     public DbSet<Subscription> Subscriptions { get; set; }
 
+    /// <summary>
+    /// Конфигурирует модель базы данных.
+    /// </summary>
+    /// <param name="modelBuilder">Строитель модели.</param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        ConfigureUserModel(modelBuilder);
+        ConfigureRoleModel(modelBuilder);
+        ConfigureEducationalEntities(modelBuilder);
+        ConfigureFinancialEntities(modelBuilder);
+        SeedInitialData(modelBuilder);
+    }
 
+    /// <summary>
+    /// Конфигурирует модель пользователя.
+    /// </summary>
+    /// <param name="modelBuilder">Строитель модели.</param>
+    private void ConfigureUserModel(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<ApplicationUser>(b =>
         {
             b.Property(u => u.UserName).HasMaxLength(256);
@@ -52,19 +93,25 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             b.Property(u => u.ParentContact)
                 .HasMaxLength(100);
         });
+    }
 
+    /// <summary>
+    /// Конфигурирует модель ролей.
+    /// </summary>
+    /// <param name="modelBuilder">Строитель модели.</param>
+    private void ConfigureRoleModel(ModelBuilder modelBuilder)
+    {
         modelBuilder.Entity<IdentityRole<Guid>>(b =>
         {
             b.Property(r => r.Name).HasMaxLength(256);
             b.Property(r => r.NormalizedName).HasMaxLength(256);
         });
-
-        ConfigureEducationalEntities(modelBuilder);
-        ConfigureFinancialEntities(modelBuilder);
-
-        SeedInitialData(modelBuilder);
     }
 
+    /// <summary>
+    /// Конфигурирует образовательные сущности (уроки, задания).
+    /// </summary>
+    /// <param name="modelBuilder">Строитель модели.</param>
     private void ConfigureEducationalEntities(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Lesson>()
@@ -100,6 +147,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             .HasConversion<string>();
     }
 
+    /// <summary>
+    /// Конфигурирует финансовые сущности (платежи, подписки).
+    /// </summary>
+    /// <param name="modelBuilder">Строитель модели.</param>
     private void ConfigureFinancialEntities(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Payment>()
@@ -143,6 +194,10 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, IdentityR
             .HasForeignKey(s => s.SubjectId);
     }
 
+    /// <summary>
+    /// Заполняет базу данных начальными данными.
+    /// </summary>
+    /// <param name="modelBuilder">Строитель модели.</param>
     private void SeedInitialData(ModelBuilder modelBuilder)
     {
         var adminRoleId = Guid.NewGuid();
